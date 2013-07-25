@@ -3548,6 +3548,7 @@ void Simulation::update_particles_i(int start, int inc)
 		std::fill(elementCount, elementCount+PT_NUM, 0);
 	}
 
+
 	for (i=0; i<=parts_lastActiveIndex; i++)
 		if (parts[i].type)
 		{
@@ -4735,6 +4736,36 @@ void Simulation::update_particles()//doesn't update the particles themselves, bu
 				drawtext(vid, x*CELL, y*CELL-2, "\x8D", 255, 255, 255, 128);
 			}
 */
+	/*	This code approximates fragmentation, then, if it over a threshold, 
+	 *	defragments
+	 */
+	float ratio = (float)NUM_PARTS/(float)parts_lastActiveIndex;
+	Particle nparts[NUM_PARTS];
+	int nindex = 0;
+	if(ratio < .25 && ratio > 0.0001)
+	{
+		printf("Ratio tripped\n");
+		printf("%d particles defragmenting last ind: %d\n",NUM_PARTS,lastPartUsed);
+		for(int i = 0; i <= lastPartUsed; i ++)
+		{
+			if(parts[i].type)
+			{
+				nparts[nindex++] = parts[i];
+			}
+		}
+		for(int i = 0; i < nindex; i++)
+		{
+			parts[i] = nparts[i];
+		}
+		for(int i = nindex; i < lastPartUsed; i++)
+		{
+			if(parts[i].type)
+				kill_part(i);
+		}
+		parts_lastActiveIndex = nindex;
+	}
+	
+
 }
 
 Simulation::~Simulation()
